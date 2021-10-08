@@ -26,13 +26,13 @@ public class SendDocumentImageHandler extends PostRequestHandler {
 
     // fare un refactoring
     @Override
-    public void sendPostRequest(JSONObject document, int id) throws IOException, InterruptedException, JSONException {
+    public void sendPostRequest(JSONObject document, long id) throws IOException, InterruptedException, JSONException {
         JSONArray documentImages = (JSONArray) documentPartFactory.create(partType, document); // da cambiare
 
         for (int i = 0; i < documentImages.length(); i++) {
             JSONObject element = documentImages.getJSONObject(i);
             JSONObject documentImage = (JSONObject) documentPartFactory.create("DOCUMENT_IMAGE", element); // da cambiare
-            documentImage.put("id", id);
+            documentImage.put("documentId", id);
 
             HttpPost request = new HttpPost(SERVER_URL + controllerMappingUrl);
             CloseableHttpClient httpClient = HttpClientBuilder.create().build();
@@ -40,7 +40,7 @@ public class SendDocumentImageHandler extends PostRequestHandler {
             request.addHeader("content-type", "application/json");
             request.setEntity(params);
             CloseableHttpResponse response = httpClient.execute(request);
-            int imageId = Integer.parseInt(EntityUtils.toString(response.getEntity(), "UTF-8")); // id dell'immagine associata
+            long imageId = Long.parseLong(EntityUtils.toString(response.getEntity(), "UTF-8")); // id dell'immagine associata
 
             JSONArray securityFeatures = (JSONArray) element.get("listOfDocumentSecurity");
 

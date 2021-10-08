@@ -15,7 +15,8 @@ public class CreateDocWithFields implements CreationStrategy {
             String fieldValue = (String) document.remove(fieldName);
             if (!(fieldValue == null)) {
                 try {
-                    documentPart.put(fieldName, fieldValue);
+                    String filteredFieldName = fieldName.replace(":","");
+                    documentPart.put(filteredFieldName, fieldValue);
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }

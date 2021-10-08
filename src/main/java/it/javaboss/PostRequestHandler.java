@@ -29,17 +29,18 @@ public class PostRequestHandler {
         this.documentPartFactory = documentPartFactory;
     }
 
-    public void sendPostRequest(JSONObject document, int id) throws IOException, InterruptedException, JSONException {
+    public void sendPostRequest(JSONObject document, long id) throws IOException, InterruptedException, JSONException {
+        //System.out.println(document.toString(4));
         JSONObject partOfADocument = (JSONObject) documentPartFactory.create(partType, document);
-        //System.out.println(partOfADocument.toString());
+        partOfADocument.put("documentId", id);
         HttpPost request = new HttpPost(SERVER_URL + controllerMappingUrl);
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         StringEntity params = new StringEntity(partOfADocument.toString());
         request.addHeader("content-type", "application/json");
         request.setEntity(params);
         CloseableHttpResponse response = httpClient.execute(request);
-        int documentId = Integer.parseInt(EntityUtils.toString(response.getEntity(), "UTF-8"));
-        if (document.length() > 0 && next != null) next.sendPostRequest(document, documentId); //forward
+        long documentId = Long.parseLong(EntityUtils.toString(response.getEntity(), "UTF-8"));
+        if (document.length() > 0 && next != null) next.sendPostRequest(document, documentId);
     }
 
 

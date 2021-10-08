@@ -40,12 +40,13 @@ public class DocumentDataExtractor implements Extractor<String> {
         extractFields(tags, document);
         extractImages(tags, document);
 
+        /*
         try {
             System.out.println(document.toString(4));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
+        */
         new SimpleExecutor().storeOperation(new SendDocumentOperation(document));
     }
 
@@ -76,6 +77,7 @@ public class DocumentDataExtractor implements Extractor<String> {
 
     private void extractImages(PeekingIterator<Element> tags, JSONObject document) {
         JSONArray listOfSideInfos = new JSONArray();
+
         try {
             while (tags.hasNext()) {
                 Element tag = tags.next();
@@ -96,7 +98,6 @@ public class DocumentDataExtractor implements Extractor<String> {
                     documentSideInfo.put("sideName", documentSideName);
                     documentSideInfo.put("imageURL", tag.absUrl("src"));
 
-                    //aggiungere nome e URL;
                     // ora mi accingo a, per questo lato del documento, estrarre tutte le feature di sicurezza, url delle immagini con relativi nomi
                     JSONArray listOfDocumentSecurity = new JSONArray();
 
@@ -118,6 +119,7 @@ public class DocumentDataExtractor implements Extractor<String> {
                                 //System.out.println("nome security feature : " + securityFeatureName + ", urlImmagine : " + url);
                             }
                         }
+
                         if (tags.hasNext()) {
                             Element nextTag = tags.peek();
                             String nextText = nextTag.ownText();
