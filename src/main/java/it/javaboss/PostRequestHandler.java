@@ -30,7 +30,6 @@ public class PostRequestHandler {
     }
 
     public void sendPostRequest(JSONObject document, long id) throws IOException, InterruptedException, JSONException {
-        //System.out.println(document.toString(4));
         JSONObject partOfADocument = (JSONObject) documentPartFactory.create(partType, document);
         partOfADocument.put("documentId", id);
         HttpPost request = new HttpPost(SERVER_URL + controllerMappingUrl);

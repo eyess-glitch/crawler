@@ -18,9 +18,8 @@ public class SendDocumentOperation implements Operation {
         ConcreteFactory factory = new ConcreteFactory();
         SendDocumentModelHandler sendDocumentModelHandler = new SendDocumentModelHandler(factory);
         SendDocumentValidityHandler sendValidityHandler = new SendDocumentValidityHandler(factory);
-        sendDocumentModelHandler.linkWith(sendValidityHandler);
-        //SendDocumentImageHandler sendImageHandler = new SendDocumentImageHandler(factory);
-        //sendDocumentModelHandler.linkWith(sendValidityHandler).linkWith(sendImageHandler);
+        SendDocumentImageHandler sendImageHandler = new SendDocumentImageHandler(factory);
+        sendDocumentModelHandler.linkWith(sendValidityHandler).linkWith(sendImageHandler);
         try {
             sendDocumentModelHandler.sendPostRequest(document, 0); // l'id nell'invio della prima richiesta e' uno stub
         } catch (InterruptedException | IOException | JSONException e) {

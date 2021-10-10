@@ -46,7 +46,7 @@ public class SimpleCrawler4j extends WebCrawler {
 		 * Configurazione della cartella del db
 		 */
 		CrawlConfig config = new CrawlConfig();
-		config.setCrawlStorageFolder("C:\\Users\\Filippo\\Desktop\\Cose\\Università\\Ths\\Codice\\temp");
+		config.setCrawlStorageFolder("C:\\Users\\Filippo-pc\\Desktop\\Cose\\Università\\Ths\\Codice\\temp");
 
 		/*
 		 * Inizializzazione del controller per il crawling.

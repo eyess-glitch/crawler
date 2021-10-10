@@ -40,13 +40,13 @@ public class DocumentDataExtractor implements Extractor<String> {
         extractFields(tags, document);
         extractImages(tags, document);
 
-        /*
+
         try {
             System.out.println(document.toString(4));
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        */
+
         new SimpleExecutor().storeOperation(new SendDocumentOperation(document));
     }
 
