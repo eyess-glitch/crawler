@@ -1,7 +1,5 @@
 package it.javaboss;
 
-import java.util.Set;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -9,11 +7,14 @@ import edu.uci.ics.crawler4j.crawler.CrawlController;
 import edu.uci.ics.crawler4j.crawler.Page;
 import edu.uci.ics.crawler4j.crawler.WebCrawler;
 import edu.uci.ics.crawler4j.fetcher.PageFetcher;
-import edu.uci.ics.crawler4j.frontier.Frontier;
 import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import edu.uci.ics.crawler4j.url.WebURL;
+import it.javaboss.command.Executor;
+import it.javaboss.command.ExtractDocumentDataOperation;
+import it.javaboss.command.FIFOExecutor;
+import it.javaboss.extractor.DocumentDataExtractor;
 
 public class SimpleCrawler4j extends WebCrawler {
 
@@ -34,8 +35,10 @@ public class SimpleCrawler4j extends WebCrawler {
 
 		if (SPECIFIC_DOCUMENT_MODEL_URL.matcher(url).matches() && page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
-			String data = htmlParseData.getHtml();
-			new SimpleExecutor().storeOperation(new ExtractDocumentDataOperation(new DocumentDataExtractor(), data));
+			String htmlPage = htmlParseData.getHtml();
+			FIFOExecutor executor = new FIFOExecutor();
+			executor.storeOperation(new ExtractDocumentDataOperation(new DocumentDataExtractor(), htmlPage));
+			executor.execute();
 		}
 	}
 
@@ -46,7 +49,8 @@ public class SimpleCrawler4j extends WebCrawler {
 		 * Configurazione della cartella del db
 		 */
 		CrawlConfig config = new CrawlConfig();
-		config.setCrawlStorageFolder("C:\\Users\\Filippo-pc\\Desktop\\Cose\\Università\\Ths\\Codice\\temp");
+		//config.setCrawlStorageFolder("C:\\Users\\Filippo-pc\\Desktop\\Cose\\Università\\Ths\\Codice\\temp");
+		config.setCrawlStorageFolder("/Users/filippofolino/Desktop/Cose/Universita/Ths/Temp");
 
 		/*
 		 * Inizializzazione del controller per il crawling.
