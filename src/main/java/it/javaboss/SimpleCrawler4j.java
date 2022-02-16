@@ -1,5 +1,7 @@
 package it.javaboss;
 
+import java.io.FileInputStream;
+import java.util.Properties;
 import java.util.regex.Pattern;
 
 import edu.uci.ics.crawler4j.crawler.CrawlConfig;
@@ -11,7 +13,6 @@ import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import edu.uci.ics.crawler4j.url.WebURL;
-import it.javaboss.command.Executor;
 import it.javaboss.command.ExtractDocumentDataOperation;
 import it.javaboss.command.FIFOExecutor;
 import it.javaboss.extractor.DocumentDataExtractor;
@@ -20,7 +21,6 @@ public class SimpleCrawler4j extends WebCrawler {
 
 	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|mp3|mp3|zip|gz))$");
 	private final static Pattern SPECIFIC_DOCUMENT_MODEL_URL = Pattern.compile("https\\:\\/\\/www\\.consilium\\.europa\\.eu\\/prado\\/en\\/([a-z]{3})-[a-z]{2}-[0-9]+\\/index\\.html");
-
 	private final static String URL = "https://www.consilium.europa.eu/prado/en/prado-documents/";
 
 	@Override
@@ -49,8 +49,9 @@ public class SimpleCrawler4j extends WebCrawler {
 		 * Configurazione della cartella del db
 		 */
 		CrawlConfig config = new CrawlConfig();
-		//config.setCrawlStorageFolder("C:\\Users\\Filippo-pc\\Desktop\\Cose\\Università\\Ths\\Codice\\temp");
-		config.setCrawlStorageFolder("/Users/filippofolino/Desktop/Cose/Universita/Ths/Temp");
+		Properties properties = new Properties();
+		properties.load(new FileInputStream("src/main/resources/config.properties"));
+		config.setCrawlStorageFolder(properties.getProperty("STORAGE_FOLDER"));
 
 		/*
 		 * Inizializzazione del controller per il crawling.
@@ -65,17 +66,13 @@ public class SimpleCrawler4j extends WebCrawler {
 		 * e' ottenuta seguento i link nelle pagine visitate.
 		 */
 
-		String url = "https://www.consilium.europa.eu/prado/en/prado-documents/EUE/index.html";
-
-		controller.addSeed(url); // da cambiare il seed
+		controller.addSeed(properties.getProperty("SEED_URL")); // da cambiare il seed
 
 		/*
 		 * Avvia 1 crawler in modo bloccante, ovvero il main termina solamente
 		 * quando il processo di crawling termina.
 		 */
 		controller.start(SimpleCrawler4j.class, 1);
-
-
 
 	}
 }

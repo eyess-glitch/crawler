@@ -3,7 +3,7 @@ package it.javaboss.extractor;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.PeekingIterator;
 import it.javaboss.command.FIFOExecutor;
-import it.javaboss.command.SendDocumentOperation;
+import it.javaboss.command.addDocumentOperation;
 import it.javaboss.constants.StaticData;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-import java.util.*;
 
 public class DocumentDataExtractor implements Extractor<String> {
 
@@ -26,19 +25,21 @@ public class DocumentDataExtractor implements Extractor<String> {
         Elements elements = htmlPage.body().select("*"); // prendo tutti gli elementi della pagina html
         PeekingIterator<Element> it = Iterators.peekingIterator(elements.iterator());
 
-        skipUselessFields(it);
+        String documentName = advanceUntilNotFound(it, "Document:").split(":")[1].trim();
+        advanceUntilNotFound(it, "Title:");
 
         extractFields(it, identityDocument);
         extractImagesURL(it, identityDocument);
-
+        
         try {
+            identityDocument.put("Document:", documentName);
             System.out.println(identityDocument.toString(4));
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
         FIFOExecutor executor = new FIFOExecutor();
-        executor.storeOperation(new SendDocumentOperation(identityDocument));
+        executor.storeOperation(new addDocumentOperation(identityDocument));
         executor.execute();
     }
 
@@ -67,6 +68,7 @@ public class DocumentDataExtractor implements Extractor<String> {
         }
     }
 
+    //TODO VEDERE COME GESTIRE NEL CASO SI PRESENTINO PIU' IMMAGINI PER UN LATO O FORSE NON GESTIRLO PROPRIO
     private void extractImagesURL(PeekingIterator<Element> it, JSONObject identityDocument) {
         JSONArray listOfSidesInfo = new JSONArray();
 
@@ -100,16 +102,24 @@ public class DocumentDataExtractor implements Extractor<String> {
 
     }
 
+    //TODO EVENTUALMENTE SISTEMARE IL FATTO CHE NON PRENDE PIU' IMMAGINI
     private JSONArray extractSideSecurityFeatures(PeekingIterator<Element> it) {
         JSONArray listOfDocumentSecurity = new JSONArray();
+        boolean isSecurityFeature = false, securityFeaturePassed = false;
 
         while (it.hasNext()) {
             Element htmlTag = it.next();
             String text = htmlTag.ownText();
-            if (htmlTag.tagName().equals("img")) {
+            isSecurityFeature = text.equals("Security features:");
+
+            if (isSecurityFeature) securityFeaturePassed = true;
+
+            if (htmlTag.tagName().equals("img") && securityFeaturePassed) {
                 String altAttribute = htmlTag.attr("alt");
-                if (altAttribute.startsWith("Image"))
+                if (altAttribute.startsWith("Image")) {
                     addSecurityInfoToList(listOfDocumentSecurity, altAttribute, htmlTag);
+                    securityFeaturePassed = false;
+                }
             }
 
             if (it.hasNext()) {
@@ -118,6 +128,7 @@ public class DocumentDataExtractor implements Extractor<String> {
                 boolean isAdocumentSideName = StaticData.INSTANCE.getDocumentSideNames().contains(nextText);
                 if (isAdocumentSideName) break;
             }
+
         }
 
         return listOfDocumentSecurity;
@@ -125,7 +136,7 @@ public class DocumentDataExtractor implements Extractor<String> {
 
     private void addSecurityInfoToList(JSONArray listOfDocumentSecurity, String altAttribute, Element htmlTag) {
         int ofPosition = altAttribute.indexOf("of");
-        String securityFeatureName = altAttribute.substring(ofPosition + 3, altAttribute.length());
+        String securityFeatureName = altAttribute.substring(ofPosition + 3);
         String url = htmlTag.absUrl("src");
 
         JSONObject securityInfo = new JSONObject();
@@ -140,14 +151,17 @@ public class DocumentDataExtractor implements Extractor<String> {
         listOfDocumentSecurity.put(securityInfo);
     }
 
-
-
-    private void skipUselessFields(PeekingIterator<Element> it) {
+    private String advanceUntilNotFound(PeekingIterator<Element> it, String fieldtoFind) {
+        String  fieldOfInterest = "";
         while (it.hasNext()) {
             String text = it.peek().ownText();
-            if (text.equals("Title:")) break;
+            if (text.startsWith(fieldtoFind)) {
+                fieldOfInterest = text;
+                break;
+            }
             it.next();
         }
+        return fieldOfInterest;
     }
 
 

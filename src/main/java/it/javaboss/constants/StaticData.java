@@ -8,13 +8,12 @@ public enum StaticData {
 
     INSTANCE;
 
-    private Set<String> documentValidity = new HashSet<>();
-    private Set<String> documentFieldNames = new HashSet<>();
-    private Set<String> documentSideNames = new HashSet<>();
+    private final Set<String> documentValidity = new HashSet<>();
+    private final Set<String> documentFieldNames = new HashSet<>();
+    private final Set<String> documentSideNames = new HashSet<>();
 
-    // eventualmente da mettere in un file di testo
-    private StaticData() {
-        Collections.addAll(documentFieldNames, "Issuing Country:", "Document Category:");
+    StaticData() {
+        Collections.addAll(documentFieldNames, "Issuing Country:", "Document Category:", "Document:");
         Collections.addAll(documentSideNames, "Outside back cover", "Outside front cover",
                                                         "Inside front cover", "Inside back cover",
                                                         "Biodata page", "Inner page(s)", "Cover");
