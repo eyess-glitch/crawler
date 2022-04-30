@@ -12,14 +12,12 @@ public class CreateIdentityDocWithFields implements CreationStrategy {
     public Object createDocumentPart(JSONObject document) throws JSONException {
         JSONObject documentPart = new JSONObject();
         for (String fieldName : documentFieldNames) {
-            String fieldValue = (String) document.remove(fieldName);
-            if (!(fieldValue == null)) {
-                try {
-                    String filteredFieldName = fieldName.replace(":","");
-                    documentPart.put(filteredFieldName, fieldValue);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+            try {
+                String fieldValue = (String) document.get(fieldName);
+                String filteredFieldName = fieldName.replace(":","");
+                documentPart.put(filteredFieldName, fieldValue);
+            } catch(JSONException e) {
+                System.out.println("Field " + fieldName + " not present");
             }
         }
         return documentPart;

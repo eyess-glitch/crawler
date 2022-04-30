@@ -1,6 +1,7 @@
 package it.javaboss.command;
 
 import it.javaboss.factory.ConcreteFactory;
+import it.javaboss.handler.AddDocumentFieldHandler;
 import it.javaboss.handler.AddDocumentImageHandler;
 import it.javaboss.handler.AddDocumentModelHandler;
 import it.javaboss.handler.AddDocumentValidityHandler;
@@ -29,11 +30,16 @@ public class addDocumentOperation implements Operation {
         try {
             Properties properties = new Properties();
             properties.load(new FileInputStream("src/main/resources/config.properties"));
+
             connection = DriverManager.getConnection(properties.getProperty("URL"), properties.getProperty("USER"), properties.getProperty("PASSWORD"));
+
             AddDocumentModelHandler addDocumentModelHandler = new AddDocumentModelHandler(connection, factory, "DOCUMENT_MODEL");
             AddDocumentValidityHandler addDocumentValidityHandler = new AddDocumentValidityHandler(connection, factory, "DOCUMENT_VALIDITY");
             AddDocumentImageHandler addDocumentImageHandler = new AddDocumentImageHandler(connection, factory, "DOCUMENT_IMAGE");
-            addDocumentModelHandler.linkWith(addDocumentValidityHandler).linkWith(addDocumentImageHandler);
+            AddDocumentFieldHandler addDocumentFieldHandler = new AddDocumentFieldHandler(connection, factory, "DOCUMENT_FIELD");
+
+            addDocumentModelHandler.linkWith(addDocumentValidityHandler).linkWith(addDocumentImageHandler).linkWith(addDocumentFieldHandler);
+
             addDocumentModelHandler.handleRequest(identityDocument, 0); // l'id nell'invio della prima richiesta e' uno stub
         } catch (JSONException | SQLException | IOException e) {
             e.printStackTrace();

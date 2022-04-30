@@ -44,7 +44,7 @@ public class AddDocumentImageHandler extends AddDocumentHandler {
                 addSecurityFeatures(documentSecurityFeatures, documentId, documentImageId);
         }
 
-        return -1L;
+        return documentId;
     }
 
     private void addSecurityFeatures(JSONArray documentSecurityFeatures, long documentId, long documentImageId) throws JSONException, SQLException {

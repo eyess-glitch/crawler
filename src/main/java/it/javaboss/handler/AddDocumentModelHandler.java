@@ -15,7 +15,7 @@ public class AddDocumentModelHandler extends AddDocumentHandler {
 
     public long insertRowsIntoDatabase(JSONObject document) throws JSONException, SQLException {
         String issuingCountry = (String) document.get("Issuing Country");
-        String documentCategory = (String) document.get("Document Category");
+        String documentCategory = ((String) document.get("Document Category")).split("-")[1].trim();
 
         long documentTypeId = insertRowIfNotExist(documentCategory, "document_type", "document_model_description");
         long issuingCountryId = insertRowIfNotExist(issuingCountry, "nationality", "country_name");

@@ -13,7 +13,6 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
-
 public class DocumentDataExtractor implements Extractor<String> {
 
     public void extract(String data)  {
@@ -38,6 +37,7 @@ public class DocumentDataExtractor implements Extractor<String> {
             e.printStackTrace();
         }
 
+        // La parte di sotto si potrebbe fare diversamente
         FIFOExecutor executor = new FIFOExecutor();
         executor.storeOperation(new addDocumentOperation(identityDocument));
         executor.execute();
@@ -47,8 +47,9 @@ public class DocumentDataExtractor implements Extractor<String> {
     private void extractFields(PeekingIterator<Element> it, JSONObject identityDocument) {
         String text = it.next().ownText();
         while (it.hasNext()) {
-            boolean fieldOfInterestContained = StaticData.INSTANCE.getDocumentFieldNames().contains(text) || StaticData.INSTANCE.getDocumentValidity().contains(text);
-
+            boolean fieldOfInterestContained = StaticData.INSTANCE.getDocumentFieldNames().contains(text)
+                                               || StaticData.INSTANCE.getDocumentValidity().contains(text)
+                                               || StaticData.INSTANCE.getDocumentModelFields().contains(text);
             if (fieldOfInterestContained) {
                 String fieldName = text;
                 text = it.next().ownText();
@@ -63,44 +64,52 @@ public class DocumentDataExtractor implements Extractor<String> {
             text = it.peek().ownText();
             fieldOfInterestContained = StaticData.INSTANCE.getDocumentSideNames().contains(text);
             if (fieldOfInterestContained) break;
-
             it.next();
         }
     }
 
-    //TODO VEDERE COME GESTIRE NEL CASO SI PRESENTINO PIU' IMMAGINI PER UN LATO O FORSE NON GESTIRLO PROPRIO
+    //TODO VEDERE COME GESTIRE NEL CASO SI PRESENTINO PIU' IMMAGINI PER UN LATO
     private void extractImagesURL(PeekingIterator<Element> it, JSONObject identityDocument) {
         JSONArray listOfSidesInfo = new JSONArray();
-
         try {
             while (it.hasNext()) {
                 Element htmlTag = it.next();
                 String textBetweenTags = htmlTag.ownText();
                 boolean isAdocumentSideName = StaticData.INSTANCE.getDocumentSideNames().contains(textBetweenTags);
-
-                if (isAdocumentSideName) {
-                    JSONObject documentSideInfo = new JSONObject();
-                    String documentSideName = textBetweenTags;
-
-                    while (it.hasNext()) {
-                        htmlTag = it.next();
-                        if (htmlTag.tagName().equals("img")) break;
-                    }
-
-                    documentSideInfo.put("sideName", documentSideName);
-                    documentSideInfo.put("imageURL", htmlTag.absUrl("src"));
-
-                    JSONArray listOfDocumentSecurity = extractSideSecurityFeatures(it);
-
-                    documentSideInfo.put("listOfDocumentSecurity", listOfDocumentSecurity);
-                    listOfSidesInfo.put(documentSideInfo);
-                }
+                if (isAdocumentSideName) extractDocumentSideImages(it, listOfSidesInfo, textBetweenTags);
             }
-
             identityDocument.put("images", listOfSidesInfo);
         } catch(JSONException e) { e.printStackTrace(); }
 
     }
+
+    private void extractDocumentSideImages(PeekingIterator<Element> it, JSONArray listOfSidesInfo, String textBetweenTags) throws JSONException {
+        JSONObject documentSideInfo = new JSONObject();
+        String documentSideName = textBetweenTags;
+        Element htmlTag = null;
+
+        String imageURL = "";
+
+        while (it.hasNext()) {
+            htmlTag = it.peek();
+            if (htmlTag.ownText().equals("Security features:")) break;
+            if (htmlTag.tagName().equals("img")) {
+                imageURL = htmlTag.absUrl("src");
+                it.next();
+                break;
+            }
+            it.next();
+        }
+
+        documentSideInfo.put("sideName", documentSideName);
+        documentSideInfo.put("imageURL", imageURL);
+
+        JSONArray listOfDocumentSecurity = extractSideSecurityFeatures(it);
+
+        documentSideInfo.put("listOfDocumentSecurity", listOfDocumentSecurity);
+        listOfSidesInfo.put(documentSideInfo);
+    }
+
 
     //TODO EVENTUALMENTE SISTEMARE IL FATTO CHE NON PRENDE PIU' IMMAGINI
     private JSONArray extractSideSecurityFeatures(PeekingIterator<Element> it) {
@@ -111,9 +120,7 @@ public class DocumentDataExtractor implements Extractor<String> {
             Element htmlTag = it.next();
             String text = htmlTag.ownText();
             isSecurityFeature = text.equals("Security features:");
-
             if (isSecurityFeature) securityFeaturePassed = true;
-
             if (htmlTag.tagName().equals("img") && securityFeaturePassed) {
                 String altAttribute = htmlTag.attr("alt");
                 if (altAttribute.startsWith("Image")) {
@@ -121,14 +128,12 @@ public class DocumentDataExtractor implements Extractor<String> {
                     securityFeaturePassed = false;
                 }
             }
-
             if (it.hasNext()) {
                 Element nextTag = it.peek();
                 String nextText = nextTag.ownText();
                 boolean isAdocumentSideName = StaticData.INSTANCE.getDocumentSideNames().contains(nextText);
                 if (isAdocumentSideName) break;
             }
-
         }
 
         return listOfDocumentSecurity;
@@ -138,16 +143,13 @@ public class DocumentDataExtractor implements Extractor<String> {
         int ofPosition = altAttribute.indexOf("of");
         String securityFeatureName = altAttribute.substring(ofPosition + 3);
         String url = htmlTag.absUrl("src");
-
         JSONObject securityInfo = new JSONObject();
-
         try {
             securityInfo.put("securityFeatureName", securityFeatureName);
             securityInfo.put("securityFeatureImage", url);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
         listOfDocumentSecurity.put(securityInfo);
     }
 

@@ -12,8 +12,9 @@ public class ConcreteFactory implements DocumentPartFactory {
 
     public ConcreteFactory() {
         this.creationStrategiesPerType = new HashMap<>(){{
-            put("DOCUMENT_MODEL", new CreateIdentityDocWithGeneralFields());
+            put("DOCUMENT_MODEL", new CreateIdentityDocWithModelFields());
             put("DOCUMENT_VALIDITY", new CreateIdentityDocWithValidityFields());
+            put("DOCUMENT_FIELD", new CreateIdentityDocWithGeneralFields());
             put("DOCUMENT_IMAGE", new CreateIdentityDocWithImage());
         }};
 

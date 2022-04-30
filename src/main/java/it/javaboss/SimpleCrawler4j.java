@@ -13,20 +13,18 @@ import edu.uci.ics.crawler4j.parser.HtmlParseData;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtConfig;
 import edu.uci.ics.crawler4j.robotstxt.RobotstxtServer;
 import edu.uci.ics.crawler4j.url.WebURL;
-import it.javaboss.command.ExtractDocumentDataOperation;
-import it.javaboss.command.FIFOExecutor;
 import it.javaboss.extractor.DocumentDataExtractor;
 
 public class SimpleCrawler4j extends WebCrawler {
 
 	private final static Pattern FILTERS = Pattern.compile(".*(\\.(css|js|gif|mp3|mp3|zip|gz))$");
 	private final static Pattern SPECIFIC_DOCUMENT_MODEL_URL = Pattern.compile("https\\:\\/\\/www\\.consilium\\.europa\\.eu\\/prado\\/en\\/([a-z]{3})-[a-z]{2}-[0-9]+\\/index\\.html");
-	private final static String URL = "https://www.consilium.europa.eu/prado/en/prado-documents/";
+	private final static String DOCUMENTS_URL = "https://www.consilium.europa.eu/prado/en/prado-documents/";
 
 	@Override
 	public boolean shouldVisit(Page referringPage, WebURL url) {
 		String href = url.getURL().toLowerCase();
-		return !FILTERS.matcher(href).matches() && (href.startsWith(URL) || SPECIFIC_DOCUMENT_MODEL_URL.matcher(href).matches());
+		return !FILTERS.matcher(href).matches() && (href.startsWith(DOCUMENTS_URL) || SPECIFIC_DOCUMENT_MODEL_URL.matcher(href).matches());
 	}
 
 	@Override
@@ -36,9 +34,7 @@ public class SimpleCrawler4j extends WebCrawler {
 		if (SPECIFIC_DOCUMENT_MODEL_URL.matcher(url).matches() && page.getParseData() instanceof HtmlParseData) {
 			HtmlParseData htmlParseData = (HtmlParseData) page.getParseData();
 			String htmlPage = htmlParseData.getHtml();
-			FIFOExecutor executor = new FIFOExecutor();
-			executor.storeOperation(new ExtractDocumentDataOperation(new DocumentDataExtractor(), htmlPage));
-			executor.execute();
+			new DocumentDataExtractor().extract(htmlPage); // eventualmente evitarlo di creare cosi' spesso per via del consumo della memoria
 		}
 	}
 

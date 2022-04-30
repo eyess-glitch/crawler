@@ -2,18 +2,16 @@ package it.javaboss.command;
 
 import java.util.LinkedList;
 
-// Onestamente è inutile
 public class FIFOExecutor implements Executor  {
 
-    private final LinkedList<Operation> operationsToBeExecuted = new LinkedList<>();
+    private Operation operationToExecute;
 
     public void execute() {
-        Operation extractDocumentDataOperation = operationsToBeExecuted.removeLast();
-        extractDocumentDataOperation.performTask();
+        operationToExecute.performTask();
     }
 
     public void storeOperation(Operation operation) {
-        operationsToBeExecuted.add(operation);
+        operationToExecute = operation;
     }
 
 }
